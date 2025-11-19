@@ -1,0 +1,36 @@
+[package]
+name = "ptrace-iterator"
+description = "Monitor and control another process using ptrace via iterators"
+edition = "2024"
+version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+linux-aio-sys = { workspace = true }
+linux-raw-sys = { workspace = true, features = [
+    "io_uring",
+    "landlock",
+    "net",
+    "system",
+] }
+nix = { workspace = true, features = ["ptrace", "socket"] }
+ptrace-iterator-attr-macro = { workspace = true }
+ptrace-iterator-core = { workspace = true }
+syscalls.workspace = true
+thiserror.workspace = true
+tracing = { workspace = true, optional = true }
+
+[features]
+tracing = ["dep:tracing"]
+
+[dev-dependencies]
+anyhow.workspace = true
+bitflags = { workspace = true, features = ["std"] }
+escargot = { workspace = true }
+tempfile = { workspace = true }
+
+[lints]
+workspace = true

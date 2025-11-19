@@ -1,0 +1,23 @@
+[package]
+name = "ptrace-iterator-core"
+description = "Core functionality required for ptrace-iterator"
+version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+edition.workspace = true
+
+[dependencies]
+linux-raw-sys = { workspace = true, features = [
+    "io_uring",
+    "landlock",
+    "net",
+    "system",
+] }
+nix = { workspace = true, features = ["process", "ptrace", "socket", "uio"] }
+syscalls = { workspace = true }
+thiserror = { workspace = true }
+
+[lints]
+workspace = true

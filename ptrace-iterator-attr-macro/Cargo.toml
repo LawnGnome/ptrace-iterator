@@ -1,0 +1,29 @@
+[package]
+name = "ptrace-iterator-attr-macro"
+description = "Attribute macro used internally by ptrace-iterator"
+version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+edition.workspace = true
+
+[lib]
+proc-macro = true
+
+[dependencies]
+darling = { workspace = true }
+itertools = { workspace = true }
+proc-macro-error = { workspace = true }
+proc-macro2 = { workspace = true }
+ptrace-iterator-core = { workspace = true }
+quote = { workspace = true }
+syn = { workspace = true }
+
+[dev-dependencies]
+anyhow = { workspace = true }
+insta = { workspace = true }
+ptrace-iterator = { workspace = true }
+
+[lints]
+workspace = true

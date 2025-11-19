@@ -1,0 +1,19 @@
+---
+source: ptrace-iterator-derive/src/derive.rs
+expression: "SyscallEnum::from_derive_input(&input)"
+---
+Err(
+    Error {
+        kind: UnsupportedShape {
+            observed: "only one of array, count, nul_terminated, opaque, or socket can be specified",
+            expected: None,
+        },
+        locations: [
+            "buf",
+            "ptr",
+        ],
+        span: Some(
+            Span,
+        ),
+    },
+)
