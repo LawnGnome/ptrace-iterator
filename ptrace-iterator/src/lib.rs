@@ -100,7 +100,7 @@ impl<UserData> Tracer<UserData> {
         self.status
     }
 
-    #[cfg_attr(feature = "tracing", tracing::instrument(level = "TRACE", ret, err))]
+    #[cfg_attr(feature = "tracing", tracing::instrument(level = "TRACE", ret))]
     fn next_event(&mut self) -> Result<Event<UserData>, Error> {
         Ok(
             match wait::wait().map_err(|e| Error::Wait { e, pid: self.pid() })? {
@@ -208,6 +208,7 @@ pub struct TracerIterator<'tracer, UserData> {
 impl<'tracer, UserData> Iterator for TracerIterator<'tracer, UserData> {
     type Item = Result<Event<UserData>, Error>;
 
+    #[cfg_attr(feature = "tracing", tracing::instrument(level = "TRACE", skip_all))]
     fn next(&mut self) -> Option<Self::Item> {
         match self.tracer.next_event() {
             Ok(event) => Some(Ok(event)),
