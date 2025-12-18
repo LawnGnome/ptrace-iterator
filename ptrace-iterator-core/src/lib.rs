@@ -5,6 +5,7 @@ use std::{
     ffi::{c_char, c_int, c_short, c_uchar, c_uint, c_ulong, c_ushort},
     fmt::{Debug, Display},
     io::IoSliceMut,
+    num::TryFromIntError,
     os::fd::{AsRawFd, RawFd},
 };
 
@@ -111,6 +112,9 @@ pub unsafe fn read_to_type<T: Sized>(pid: Pid, addr: Opaque) -> Result<T> {
 
 #[derive(Debug, Error)]
 pub enum Error {
+    #[error("parsing file descriptor number: {0}")]
+    FdParse(#[from] TryFromIntError),
+
     #[error("getting event details on PID {pid}: {e}")]
     GetEvent {
         #[source]
@@ -202,12 +206,12 @@ try_from_arg_as!(isize);
 
 /// A file descriptor.
 #[derive(Debug, Clone, Copy, Hash, Eq, PartialEq, Ord, PartialOrd)]
-pub struct Fd(pub c_long);
+pub struct Fd(pub c_int);
 
 impl Fd {
     /// Checks if the file descriptor represents the `AT_FDCWD` constant.
     pub fn is_at_working_directory(&self) -> bool {
-        self.0 == (AT_FDCWD as c_long)
+        self.0 == AT_FDCWD
     }
 }
 
@@ -218,24 +222,42 @@ impl Display for Fd {
 }
 
 impl TryFromArg for Fd {
-    type Error = Infallible;
+    type Error = TryFromIntError;
 
     fn try_from_arg(arg: u64) -> core::result::Result<Self, Self::Error> {
-        Ok(Self(c_long::try_from_arg(arg)?))
+        // Syscall arguments on 64-bit architectures are u64s, but for FDs, they're treated as i32.
+        // We need to only look at the lower 32 bits, and interpret that as a signed integer.
+        Ok(Self(c_uint::try_from(arg & 0xffffffff)? as c_int))
     }
 }
 
-impl From<c_long> for Fd {
-    fn from(fd: c_long) -> Self {
+impl From<c_int> for Fd {
+    fn from(fd: c_int) -> Self {
         Self(fd)
     }
 }
 
-impl From<Fd> for c_long {
+impl From<Fd> for c_int {
     fn from(fd: Fd) -> Self {
         fd.0
     }
 }
+
+macro_rules! impl_try_from_fd {
+    ($ty:ty) => {
+        impl TryFrom<$ty> for Fd {
+            type Error = TryFromIntError;
+
+            fn try_from(arg: $ty) -> core::result::Result<Self, Self::Error> {
+                Ok(Self(c_int::try_from(arg)?))
+            }
+        }
+    };
+}
+
+impl_try_from_fd!(u32);
+impl_try_from_fd!(i64);
+impl_try_from_fd!(u64);
 
 impl AsRawFd for Fd {
     fn as_raw_fd(&self) -> RawFd {

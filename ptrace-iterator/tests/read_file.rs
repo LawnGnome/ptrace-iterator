@@ -41,7 +41,7 @@ fn test_read_file() -> anyhow::Result<()> {
     let mut seen = Seen::empty();
     let mut tracer = Tracer::<String>::new(child)?;
     for result in tracer.iter() {
-        match dbg!(result?) {
+        match result? {
             Event::SyscallEntry(ref mut event) => match event.syscall() {
                 Syscall::Openat(args)
                     if args.dfd().is_at_working_directory()
@@ -65,7 +65,7 @@ fn test_read_file() -> anyhow::Result<()> {
             Event::SyscallExit(ref mut event) => {
                 match event.syscall() {
                     Some(Syscall::Openat(_)) if last == Some(Seen::OPEN) && !event.is_error() => {
-                        stdin_fd = Some(Fd(event.sval()));
+                        stdin_fd = Some(Fd::try_from(event.sval())?);
                         seen.insert(Seen::OPEN);
 
                         // Make sure the userdata stayed.
